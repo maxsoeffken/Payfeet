@@ -1,86 +1,64 @@
-// /pages/register.js
-import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setMessage('Bitte warten …');
     const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage('Registrierung erfolgreich. Prüfe deine E-Mails zur Bestätigung.');
-    }
+    setMessage(error ? error.message : "Registrierung erfolgreich ✅ Bitte prüfe deine Emails.");
   };
 
   return (
     <div
       style={{
-        minHeight: '100vh',
-        backgroundImage: 'url("/payfeet-bg.png")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#78A9F3", // Fallback Farbe
+        backgroundImage: "url('/payfeet-bg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
       <div
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          padding: '32px',
-          borderRadius: '8px',
-          maxWidth: '400px',
-          width: '100%'
+          width: 360,
+          background: "white",
+          borderRadius: 12,
+          padding: 20,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 16 }}>
-          <img
-            src="/payfeet-logo.png"
-            alt="Payfeet"
-            style={{ width: 120, height: 'auto' }}
-          />
-        </div>
-
-        <h1 style={{ textAlign: 'center' }}>Registrieren</h1>
+        <h1 style={{ textAlign: "center", marginBottom: 16 }}>Registrieren</h1>
         <form onSubmit={handleRegister}>
           <input
             type="email"
-            placeholder="E-Mail"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: 10, marginBottom: 10 }}
+            style={{ width: "100%", marginBottom: 10, padding: 10 }}
           />
           <input
             type="password"
-            placeholder="Passwort (min. 6 Zeichen)"
+            placeholder="Passwort"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: 10, marginBottom: 10 }}
+            style={{ width: "100%", marginBottom: 10, padding: 10 }}
           />
           <button
             type="submit"
-            style={{
-              width: '100%',
-              padding: 10,
-              backgroundColor: '#0070f3',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 4,
-              cursor: 'pointer'
-            }}
+            style={{ width: "100%", padding: 10, borderRadius: 6, background: "#1a73e8", color: "#fff" }}
           >
-            Konto erstellen
+            Registrieren
           </button>
         </form>
-        {message && <p style={{ marginTop: 12, textAlign: 'center' }}>{message}</p>}
+        {message && <p style={{ marginTop: 10, textAlign: "center" }}>{message}</p>}
       </div>
     </div>
   );
