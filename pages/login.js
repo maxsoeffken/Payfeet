@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -19,9 +20,7 @@ export default function Login() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        // Fallback: immer blau, auch wenn Bild mal nicht lädt
         background: "#78A9F3",
-        // Bild aus /public
         backgroundImage: "url('/payfeet-bg.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -38,6 +37,8 @@ export default function Login() {
         }}
       >
         <h1 style={{ textAlign: "center", marginBottom: 16 }}>Login</h1>
+
+        {/* Login Formular */}
         <form onSubmit={handleLogin}>
           <input
             type="email"
@@ -53,11 +54,31 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
             style={{ width: "100%", marginBottom: 10, padding: 10 }}
           />
-          <button type="submit" style={{ width: "100%", padding: 10, borderRadius: 6, background: "#1a73e8", color: "#fff" }}>
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: 10,
+              borderRadius: 6,
+              background: "#1a73e8",
+              color: "#fff",
+              fontWeight: "bold",
+            }}
+          >
             Einloggen
           </button>
         </form>
+
+        {/* Meldung falls Fehler oder Erfolg */}
         {message && <p style={{ marginTop: 10, textAlign: "center" }}>{message}</p>}
+
+        {/* Link zu Register */}
+        <p style={{ marginTop: 16, textAlign: "center" }}>
+          Noch kein Konto?{" "}
+          <Link href="/register" style={{ color: "#1a73e8", fontWeight: "bold" }}>
+            Registrieren
+          </Link>
+        </p>
       </div>
     </div>
   );
