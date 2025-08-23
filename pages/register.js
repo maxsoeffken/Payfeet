@@ -1,61 +1,69 @@
-// pages/register.js
-import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import Link from 'next/link';
+import { useState } from "react";
+import Link from "next/link";
+import { supabase } from "../lib/supabaseClient";
 
-export default function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [msg, setMsg] = useState('');
+export default function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState(null);
 
-  async function handleRegister(e) {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    setMsg(null);
     setLoading(true);
-    setMsg('');
     const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setMsg(error.message);
-    else setMsg('Registrierung erfolgreich! Prüfe deine E-Mails zur Bestätigung.');
     setLoading(false);
-  }
+    if (error) setMsg({ type: "error", text: error.message });
+    else setMsg({ type: "ok", text: "Bitte prüfe deine E-Mails zur Bestätigung." });
+  };
 
   return (
     <div
       style={{
-        minHeight: '100vh',
         backgroundImage: "url('/payfeet-bg.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
       }}
     >
       <div
         style={{
-          width: '100%',
-          maxWidth: '520px',
-          background: 'rgba(255,255,255,0.96)',
-          borderRadius: '16px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-          padding: '28px',
+          background: "rgba(255,255,255,0.95)",
+          padding: "32px",
+          borderRadius: "12px",
+          width: "100%",
+          maxWidth: "420px",
+          textAlign: "center",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+          backdropFilter: "blur(2px)",
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <img
-            src="/payfeet-logo.png"
-            alt="Payfeet Logo"
-            width={96}
-            height={96}
-            style={{ borderRadius: 12, objectFit: 'cover', display: 'inline-block' }}
-          />
-        </div>
+        <img
+          src="/payfeet-logo.png"
+          alt="Payfeet Logo"
+          style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 12, margin: "0 auto 18px" }}
+        />
+        <h1 style={{ margin: "0 0 16px" }}>Registrieren</h1>
 
-        <h1 style={{ textAlign: 'center', marginTop: 0, marginBottom: 18 }}>Registrieren</h1>
+        {msg && (
+          <div
+            style={{
+              marginBottom: 12,
+              color: msg.type === "error" ? "#b00020" : "#0a7f2e",
+              fontSize: 14,
+            }}
+          >
+            {msg.text}
+          </div>
+        )}
 
-        <form onSubmit={handleRegister} style={{ display: 'grid', gap: '12px' }}>
+        <form onSubmit={handleRegister}>
           <input
             type="email"
             placeholder="Email"
@@ -72,18 +80,13 @@ export default function RegisterPage() {
             required
             style={inputStyle}
           />
-          <button type="submit" disabled={loading} style={buttonStyle}>
-            {loading ? 'Bitte warten…' : 'Registrieren'}
+          <button type="submit" style={buttonStyle} disabled={loading}>
+            {loading ? "… " : ""}Registrieren
           </button>
         </form>
 
-        {!!msg && <p style={{ marginTop: 12, color: '#0a7', textAlign: 'center' }}>{msg}</p>}
-
-        <p style={{ textAlign: 'center', marginTop: 18 }}>
-          Schon ein Konto?{' '}
-          <Link href="/login" style={{ color: '#1a56db', textDecoration: 'underline' }}>
-            Login
-          </Link>
+        <p style={{ marginTop: 14, fontSize: 14 }}>
+          Schon ein Konto? <Link href="/login">Login</Link>
         </p>
       </div>
     </div>
@@ -91,22 +94,22 @@ export default function RegisterPage() {
 }
 
 const inputStyle = {
-  width: '100%',
-  padding: '12px 14px',
-  borderRadius: 10,
-  border: '1px solid #d0d7de',
+  width: "100%",
+  padding: "12px 14px",
+  marginBottom: 12,
+  borderRadius: 8,
+  border: "1px solid #D1D5DB",
+  outline: "none",
   fontSize: 16,
-  outline: 'none',
 };
 
 const buttonStyle = {
-  width: '100%',
-  padding: '12px 14px',
-  borderRadius: 10,
-  border: 'none',
-  fontSize: 16,
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 8,
+  border: "none",
+  backgroundColor: "#3B82F6",
+  color: "#fff",
   fontWeight: 600,
-  background: '#3b82f6',
-  color: '#fff',
-  cursor: 'pointer',
+  cursor: "pointer",
 };
