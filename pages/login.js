@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
+import { useRouter } from "next/router";
 
 export default function Login() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError(error.message);
+      alert(error.message);
     } else {
       router.push("/");
     }
@@ -21,10 +20,11 @@ export default function Login() {
   return (
     <div
       style={{
+        backgroundColor: "#6caef5",
         backgroundImage: "url('/payfeet-bg.png')",
-        backgroundSize: "cover",   // <<< Hintergrund füllt alles aus
-        backgroundPosition: "center",
+        backgroundSize: "300px auto",
         backgroundRepeat: "no-repeat",
+        backgroundPosition: "center top 50px",
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -56,12 +56,11 @@ export default function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={{
-              display: "block",
               width: "100%",
               padding: "10px",
               marginBottom: "10px",
-              border: "1px solid #ccc",
               borderRadius: "5px",
+              border: "1px solid #ccc",
             }}
           />
           <input
@@ -70,31 +69,27 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={{
-              display: "block",
               width: "100%",
               padding: "10px",
               marginBottom: "20px",
-              border: "1px solid #ccc",
               borderRadius: "5px",
+              border: "1px solid #ccc",
             }}
           />
           <button
             type="submit"
             style={{
-              backgroundColor: "#007bff",
+              width: "100%",
+              padding: "10px",
+              borderRadius: "5px",
+              background: "#0070f3",
               color: "white",
               border: "none",
-              padding: "10px",
-              width: "100%",
-              borderRadius: "5px",
-              cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
             Einloggen
           </button>
-          {error && (
-            <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
-          )}
         </form>
         <p style={{ marginTop: "15px" }}>
           Noch kein Konto? <a href="/register">Registrieren</a>
