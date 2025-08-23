@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -9,7 +10,9 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     const { error } = await supabase.auth.signUp({ email, password });
-    setMessage(error ? error.message : "Registrierung erfolgreich ✅ Bitte prüfe deine Emails.");
+    setMessage(
+      error ? error.message : "Registrierung erfolgreich ✅ Bitte prüfe deine Emails."
+    );
   };
 
   return (
@@ -19,7 +22,7 @@ export default function Register() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#78A9F3", // Fallback Farbe
+        background: "#78A9F3",
         backgroundImage: "url('/payfeet-bg.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -36,6 +39,8 @@ export default function Register() {
         }}
       >
         <h1 style={{ textAlign: "center", marginBottom: 16 }}>Registrieren</h1>
+
+        {/* Registrierungsformular */}
         <form onSubmit={handleRegister}>
           <input
             type="email"
@@ -53,12 +58,29 @@ export default function Register() {
           />
           <button
             type="submit"
-            style={{ width: "100%", padding: 10, borderRadius: 6, background: "#1a73e8", color: "#fff" }}
+            style={{
+              width: "100%",
+              padding: 10,
+              borderRadius: 6,
+              background: "#1a73e8",
+              color: "#fff",
+              fontWeight: "bold",
+            }}
           >
             Registrieren
           </button>
         </form>
+
+        {/* Meldung */}
         {message && <p style={{ marginTop: 10, textAlign: "center" }}>{message}</p>}
+
+        {/* Link zurück zum Login */}
+        <p style={{ marginTop: 16, textAlign: "center" }}>
+          Schon ein Konto?{" "}
+          <Link href="/login" style={{ color: "#1a73e8", fontWeight: "bold" }}>
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );
