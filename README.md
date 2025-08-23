@@ -1,1 +1,1 @@
-# Payfeet-app
+# Payfeet
