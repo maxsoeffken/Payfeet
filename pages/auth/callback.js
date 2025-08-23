@@ -8,25 +8,19 @@ export default function Callback() {
   useEffect(() => {
     const handleAuth = async () => {
       const { data, error } = await supabase.auth.getSession();
-
       if (error) {
-        console.error("Fehler beim Abrufen der Session:", error.message);
+        console.error("Session-Fehler:", error.message);
+        router.push("/login");
         return;
       }
-
       if (data.session) {
-        console.log("✅ Session erfolgreich:", data.session);
-        // Weiterleitung ins Dashboard
         router.push("/dashboard");
       } else {
-        console.warn("⚠️ Keine Session gefunden.");
-        // zurück zum Login
         router.push("/login");
       }
     };
-
     handleAuth();
   }, [router]);
 
-  return <p>Bitte warten, du wirst weitergeleitet...</p>;
+    return <p style={{padding:24}}>Bitte warten, du wirst weitergeleitet…</p>;
 }
