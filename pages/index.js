@@ -1,7 +1,6 @@
 // pages/index.js
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: '/login', permanent: false },
-  };
+import Login from './login';
+
+export default function Home() {
+  return <Login />;
 }
-export default function Home() { return null; }
