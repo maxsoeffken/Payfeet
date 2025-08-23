@@ -1,28 +1,28 @@
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
 
 export default function Register() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState(null);
+  const [error, setError] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setMsg(null);
-    setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
-    setLoading(false);
-    if (error) setMsg({ type: "error", text: error.message });
-    else setMsg({ type: "ok", text: "Bitte prüfe deine E-Mails zur Bestätigung." });
+    if (error) {
+      setError(error.message);
+    } else {
+      router.push("/login");
+    }
   };
 
   return (
     <div
       style={{
         backgroundImage: "url('/payfeet-bg.png')",
-        backgroundSize: "cover",
+        backgroundSize: "contain",   // <<< wichtig, Bild wird vollständig angezeigt
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         minHeight: "100vh",
@@ -34,82 +34,72 @@ export default function Register() {
     >
       <div
         style={{
-          background: "rgba(255,255,255,0.95)",
-          padding: "32px",
-          borderRadius: "12px",
+          background: "white",
+          padding: "40px",
+          borderRadius: "10px",
+          maxWidth: "400px",
           width: "100%",
-          maxWidth: "420px",
+          boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
           textAlign: "center",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-          backdropFilter: "blur(2px)",
         }}
       >
         <img
           src="/payfeet-logo.png"
           alt="Payfeet Logo"
-          style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 12, margin: "0 auto 18px" }}
+          style={{ width: "80px", margin: "0 auto 20px" }}
         />
-        <h1 style={{ margin: "0 0 16px" }}>Registrieren</h1>
-
-        {msg && (
-          <div
-            style={{
-              marginBottom: 12,
-              color: msg.type === "error" ? "#b00020" : "#0a7f2e",
-              fontSize: 14,
-            }}
-          >
-            {msg.text}
-          </div>
-        )}
-
+        <h2 style={{ marginBottom: "20px" }}>Registrieren</h2>
         <form onSubmit={handleRegister}>
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            style={inputStyle}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px",
+              marginBottom: "10px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+            }}
           />
           <input
             type="password"
             placeholder="Passwort"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            style={inputStyle}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px",
+              marginBottom: "20px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+            }}
           />
-          <button type="submit" style={buttonStyle} disabled={loading}>
-            {loading ? "… " : ""}Registrieren
+          <button
+            type="submit"
+            style={{
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              padding: "10px",
+              width: "100%",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Registrieren
           </button>
+          {error && (
+            <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
+          )}
         </form>
-
-        <p style={{ marginTop: 14, fontSize: 14 }}>
-          Schon ein Konto? <Link href="/login">Login</Link>
+        <p style={{ marginTop: "15px" }}>
+          Schon ein Konto? <a href="/login">Login</a>
         </p>
       </div>
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "12px 14px",
-  marginBottom: 12,
-  borderRadius: 8,
-  border: "1px solid #D1D5DB",
-  outline: "none",
-  fontSize: 16,
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "12px 14px",
-  borderRadius: 8,
-  border: "none",
-  backgroundColor: "#3B82F6",
-  color: "#fff",
-  fontWeight: 600,
-  cursor: "pointer",
-};
