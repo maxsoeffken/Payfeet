@@ -1,47 +1,49 @@
-import { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+// /pages/login.js
+import { useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { useRouter } from 'next/router';
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [email, setEmail]     = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    setMessage('Anmeldung …');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage("Login erfolgreich 🎉");
+      setMessage('Login erfolgreich.');
+      router.push('/'); // nach Home
     }
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
+    <div style={{ maxWidth: 420, margin: '40px auto', padding: 16 }}>
       <h1>Login</h1>
       <form onSubmit={handleLogin}>
         <input
           type="email"
-          placeholder="Email"
+          placeholder="E-Mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          style={{ width: '100%', padding: 10, marginBottom: 10 }}
         />
-        <br />
         <input
           type="password"
           placeholder="Passwort"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          style={{ width: '100%', padding: 10, marginBottom: 10 }}
         />
-        <br />
-        <button type="submit">Einloggen</button>
+        <button type="submit" style={{ width: '100%', padding: 10 }}>Einloggen</button>
       </form>
-      <p>{message}</p>
+      {message && <p style={{ marginTop: 12 }}>{message}</p>}
     </div>
   );
 }
