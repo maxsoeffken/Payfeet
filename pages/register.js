@@ -22,7 +22,7 @@ export default function Register() {
     <div
       style={{
         backgroundImage: "url('/payfeet-bg.png')",
-        backgroundSize: "contain",   // <<< wichtig, Bild wird vollständig angezeigt
+        backgroundSize: "cover",   // <<< Hintergrund füllt alles aus
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         minHeight: "100vh",
