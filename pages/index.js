@@ -1,59 +1,69 @@
 // pages/index.js
-import Link from 'next/link';
-
 export default function Home() {
   return (
     <div
       style={{
-        minHeight: '100vh',
-        backgroundImage: "url('/payfeet-bg.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
+        backgroundColor: "#6caef5",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
       }}
     >
       <div
         style={{
-          width: '100%',
-          maxWidth: '640px',
-          background: 'rgba(255,255,255,0.92)',
-          borderRadius: '16px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-          padding: '28px',
-          textAlign: 'left',
+          background: "white",
+          padding: "36px",
+          borderRadius: "12px",
+          width: "100%",
+          maxWidth: "420px",
+          textAlign: "center",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
-          <img
-            src="/payfeet-logo.png"
-            alt="Payfeet Logo"
-            width={46}
-            height={46}
-            style={{
-              borderRadius: '10px',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          />
-          <h1 style={{ margin: 0, fontSize: '28px' }}>Payfeet</h1>
-        </div>
+        {/* kleines, fixes Logo – NICHT als Background */}
+        <img
+          src="/payfeet-logo.png"
+          alt="Payfeet Logo"
+          style={{ width: 120, height: "auto", margin: "0 auto 16px", display: "block", borderRadius: 12 }}
+        />
 
-        <p style={{ marginTop: 8, color: '#333', fontSize: '16px' }}>
+        <h1 style={{ margin: "0 0 8px" }}>Payfeet</h1>
+        <p style={{ margin: "0 0 20px", color: "#444" }}>
           Bitte einloggen oder registrieren.
         </p>
 
-        <div style={{ display: 'flex', gap: '18px', marginTop: '16px' }}>
-          <Link href="/login" style={{ color: '#1a56db', textDecoration: 'underline' }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+          <a
+            href="/login"
+            style={{
+              padding: "10px 16px",
+              background: "#eef3ff",
+              border: "1px solid #d5e1ff",
+              borderRadius: 8,
+              textDecoration: "none",
+              color: "#1a56db",
+              fontWeight: 600,
+              minWidth: 120,
+            }}
+          >
             Login
-          </Link>
-          <span style={{ color: '#999' }}>•</span>
-          <Link href="/register" style={{ color: '#1a56db', textDecoration: 'underline' }}>
+          </a>
+          <a
+            href="/register"
+            style={{
+              padding: "10px 16px",
+              background: "#1a56db",
+              borderRadius: 8,
+              textDecoration: "none",
+              color: "white",
+              fontWeight: 700,
+              minWidth: 120,
+            }}
+          >
             Registrieren
-          </Link>
+          </a>
         </div>
       </div>
     </div>
