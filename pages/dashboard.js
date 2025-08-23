@@ -1,40 +1,51 @@
 // pages/dashboard.js
-import Shell from "../components/Shell";
-import RequireAuth from "../components/RequireAuth";
-import { supabase } from "../lib/supabaseClient";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Dashboard() {
-  const [email, setEmail] = useState("");
+  const [user, setUser] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setEmail(data?.session?.user?.email || ""));
-  }, []);
+    const getUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        router.push("/login"); // Wenn kein User → zurück zum Login
+      } else {
+        setUser(data.user);
+      }
+    };
+    getUser();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   return (
-    <RequireAuth>
-      <Shell active="dashboard">
-        <section style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))" }}>
-          <Box title="Willkommen">
-            <p style={{ margin: 0, color: "#475467" }}>Eingeloggt als <b>{email || "—"}</b></p>
-          </Box>
-          <Box title="Abos">
-            <p style={{ margin: 0, color: "#667085" }}>Aktive Abos: 0 (MVP)</p>
-          </Box>
-          <Box title="Einnahmen">
-            <p style={{ margin: 0, color: "#667085" }}>Diesen Monat: €0,00 (MVP)</p>
-          </Box>
-        </section>
-      </Shell>
-    </RequireAuth>
-  );
-}
-
-function Box({ title, children }) {
-  return (
-    <div style={{ background: "#fff", border: "1px solid #eef2ff", borderRadius: 14, padding: 14 }}>
-      <div style={{ fontWeight: 700, marginBottom: 6 }}>{title}</div>
-      {children}
+    <div style={{ maxWidth: "600px", margin: "50px auto", textAlign: "center" }}>
+      <h1>Willkommen bei Payfeet 🎉</h1>
+      {user && (
+        <div>
+          <p>Du bist eingeloggt als: <strong>{user.email}</strong></p>
+        </div>
+      )}
+      <button
+        onClick={handleLogout}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          backgroundColor: "#3b82f6",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer"
+        }}
+      >
+        Ausloggen
+      </button>
     </div>
   );
 }
