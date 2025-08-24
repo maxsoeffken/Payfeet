@@ -1,7 +1,4 @@
-export default function Home() {
-  return null; // wird nie angezeigt
-}
-
+// pages/index.js
 export async function getServerSideProps() {
   return {
     redirect: {
@@ -9,4 +6,8 @@ export async function getServerSideProps() {
       permanent: false,
     },
   };
+}
+
+export default function Home() {
+  return null;
 }
