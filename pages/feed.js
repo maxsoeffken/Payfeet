@@ -1,46 +1,39 @@
-// pages/feed.js
+import TopNav from "../components/TopNav";
+import Composer from "../components/Composer";
+import Tabs from "../components/Tabs";
+import FeedCard from "../components/FeedCard";
+import BottomNav from "../components/BottomNav";
+
 export default function FeedPage() {
   const posts = [
-    { id: 1, author: "@alice", text: "Hallo aus dem Demo-Feed 👋" },
-    { id: 2, author: "@bob",   text: "Noch ein Post – nur zum Testen." },
-    { id: 3, author: "@chris", text: "Klick auf Kaufen (Fake) ↑" },
+    {
+      id: 1,
+      text:
+        "@yrsaclicks has traveled far and wide, capturing stunning nature shots from Florida’s shores to Sweden’s forests, the Cotswolds’ rolling hills, and the Blue Ridge Mountains. See the world through her lens! 📸🌿",
+      image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop"
+    },
+    {
+      id: 2,
+      text: "Noch ein Post – mit Bild",
+      image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop"
+    },
+    { id: 3, text: "Kurzer Post ohne Bild – nur Text." }
   ];
 
-  const handleFakeBuy = (postId) => {
-    alert(`(Demo) Kauf-Flow für Post #${postId} – hier käme Stripe.`);
-  };
-
   return (
-    <main style={{ maxWidth: 800, margin: "60px auto", padding: "0 16px" }}>
-      <h1 style={{ fontSize: 42, marginBottom: 24 }}>Feed</h1>
-      <p style={{ marginBottom: 24 }}>🎉 Eingeloggt – hier kommt dein Content.</p>
+    <div style={{ background:"#fafafa", minHeight:"100svh" }}>
+      <TopNav />
 
-      <div style={{ display: "grid", gap: 16 }}>
-        {posts.map((p) => (
-          <article key={p.id} style={{
-            border: "1px solid #e5e7eb",
-            borderRadius: 12,
-            padding: 16,
-            background: "#fff"
-          }}>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>{p.author}</div>
-            <div style={{ marginBottom: 12 }}>{p.text}</div>
-            <button
-              onClick={() => handleFakeBuy(p.id)}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 8,
-                border: "1px solid #111",
-                background: "#111",
-                color: "#fff",
-                cursor: "pointer"
-              }}
-            >
-              Kaufen (Demo) – Post #{p.id}
-            </button>
-          </article>
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: "12px 16px 84px", display:"grid", gap:12 }}>
+        <Composer />
+        <Tabs />
+
+        {posts.map(p => (
+          <FeedCard key={p.id} text={p.text} image={p.image} />
         ))}
-      </div>
-    </main>
+      </main>
+
+      <BottomNav />
+    </div>
   );
 }
