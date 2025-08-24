@@ -1,6 +1,10 @@
-// pages/_app.js
-import "../styles/modern.css";
+import '../styles/modern.css'; // Hier wird dein CSS eingebunden
+import { SessionProvider } from 'next-auth/react';
 
 export default function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps} />;
+  return (
+    <SessionProvider session={pageProps.session}>
+      <Component {...pageProps} />
+    </SessionProvider>
+  );
 }
