@@ -1,42 +1,42 @@
+// components/RequireAuth.js
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import { useRouter } from 'next/router';
+import supabase from '../lib/supabaseClient'; // <- WICHTIG: richtiger Pfad!
 
 export default function RequireAuth({ children }) {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const router = useRouter();
+  const [state, setState] = useState('loading'); // 'loading' | 'authed' | 'noauth'
 
   useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    let mounted = true;
 
-      if (!session) {
-        router.push('/login'); // weiterleiten, wenn nicht eingeloggt
-      } else {
-        setUser(session.user);
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
+      if (session) setState('authed');
+      else {
+        setState('noauth');
+        // schicke zur Login-Seite, danach zurück auf aktuelle Seite
+        const back = encodeURIComponent(router.asPath || '/feed');
+        router.replace(`/login?redirect=${back}`);
       }
-      setLoading(false);
-    };
+    }
 
-    checkUser();
+    checkSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/login');
-      } else {
-        setUser(session.user);
-      }
+    // live auf Auth-Änderungen reagieren
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setState(session ? 'authed' : 'noauth');
     });
 
     return () => {
-      listener.subscription.unsubscribe();
+      mounted = false;
+      sub?.subscription?.unsubscribe?.();
     };
   }, [router]);
 
-  if (loading) return <p>Loading...</p>;
-
+  if (state === 'loading') return <div style={{ padding: 24 }}>Lade…</div>;
+  if (state === 'noauth') return null; // wir redirecten gerade
   return <>{children}</>;
 }
