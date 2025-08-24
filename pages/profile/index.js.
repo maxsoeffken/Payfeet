@@ -1,8 +1,34 @@
 export default function ProfileIndex() {
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Dein Profil</h1>
-      <p>Hier kannst du deine Informationen verwalten.</p>
+    <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      {/* Profil Kopfbereich */}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+        <img 
+          src="https://via.placeholder.com/100" 
+          alt="Profilbild" 
+          style={{ borderRadius: "50%", marginRight: "20px" }} 
+        />
+        <div>
+          <h2 style={{ margin: 0 }}>@payfeet</h2>
+          <p style={{ margin: "5px 0", color: "gray" }}>Willkommen zu deinem Profil 🎉</p>
+        </div>
+      </div>
+
+      {/* Profil Infos */}
+      <div style={{ marginBottom: "20px" }}>
+        <h3>Über mich</h3>
+        <p>Hier kannst du deine Biografie oder Infos über dich anzeigen.</p>
+      </div>
+
+      {/* Aktionen */}
+      <div style={{ display: "flex", gap: "10px" }}>
+        <button style={{ padding: "10px 15px", borderRadius: "5px", border: "none", background: "#0070f3", color: "white", cursor: "pointer" }}>
+          Profil bearbeiten
+        </button>
+        <button style={{ padding: "10px 15px", borderRadius: "5px", border: "1px solid #0070f3", background: "white", color: "#0070f3", cursor: "pointer" }}>
+          Abmelden
+        </button>
+      </div>
     </div>
   );
 }
