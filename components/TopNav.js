@@ -1,25 +1,17 @@
-export default function TopNav() {
+// components/TopNav.js
+export default function TopNav({ title = "START" }) {
   return (
-    <header style={styles.wrap}>
-      <div style={{ fontSize: 22, fontWeight: 800 }}>START</div>
-      <div style={styles.actions}>
-        <button style={styles.iconBtn} aria-label="Search">🔍</button>
-        <button style={styles.iconBtn} aria-label="Menu">⋮</button>
+    <header className="topnav" role="banner">
+      <div className="topnav__title">{title}</div>
+
+      <div className="topnav__actions" role="toolbar" aria-label="Seitennavigation">
+        <a className="icon-btn" href="/search" aria-label="Suche">
+          <span>🔎</span>
+        </a>
+        <button className="icon-btn" aria-label="Menü" onClick={() => alert("Menü (Demo)")}>
+          <span>⋮</span>
+        </button>
       </div>
     </header>
   );
 }
-
-const styles = {
-  wrap: {
-    position: "sticky", top: 0, zIndex: 20,
-    display: "flex", alignItems: "center", justifyContent: "space-between",
-    height: 56, padding: "0 16px",
-    background: "#fff", borderBottom: "1px solid #eee"
-  },
-  actions: { display: "flex", gap: 8 },
-  iconBtn: {
-    width: 36, height: 36, borderRadius: 8, border: "1px solid #eee",
-    background: "#fff", fontSize: 18, cursor: "pointer"
-  }
-};
