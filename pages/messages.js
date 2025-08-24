@@ -1,9 +1,8 @@
-// pages/messages.js
-export default function MessagesPage() {
+import Layout from "../components/Layout";
+export default function Messages() {
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Nachrichten</h1>
-      <p>Hier erscheinen später deine Nachrichten.</p>
-    </main>
+    <Layout title="Nachrichten">
+      <p>Nachrichten (Demo).</p>
+    </Layout>
   );
 }
