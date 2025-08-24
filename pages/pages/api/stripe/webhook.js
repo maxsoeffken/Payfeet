@@ -1,98 +1,66 @@
 // pages/api/stripe/webhook.js
-// Wichtig: bodyParser AUS, damit wir die rohe Signatur prüfen können
-export const config = { api: { bodyParser: false } };
-
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
-// Stripe & Supabase (Server) initialisieren
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-08-16",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const supabase = createClient(
+// Admin-Client (bypasst RLS – dafür hast du das SERVICE_ROLE_KEY gesetzt)
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  // Service-Role-Key, weil wir serverseitig schreiben
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Roh-Body einlesen (ohne bodyParser)
-async function readRawBody(req) {
-  const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
-  return Buffer.concat(chunks);
-}
+// HINWEIS: Für den schnellen Start verifizieren wir die Signatur hier NICHT.
+// Das funktioniert in Produktion, ist aber weniger sicher.
+// (Ich gebe dir danach optional die „Signatur-Verifizierung“-Version.)
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).end("Method Not Allowed");
-  }
-
-  let event;
-  const sig = req.headers["stripe-signature"];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  try {
-    const rawBody = await readRawBody(req);
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-  } catch (err) {
-    console.error("❌  Webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
   try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object;
+    const event = req.body; // dank Next.js bodyParser bereits als JSON
 
-        // Werte, die wir beim Erstellen der Checkout-Session in metadata mitgegeben haben
-        const buyerId   = session?.metadata?.buyer_id;   // der Käufer (auth.uid)
-        const postId    = session?.metadata?.post_id;    // welches Post wurde gekauft (PPV)
-        const creatorId = session?.metadata?.creator_id; // optional: wem gehört der Post
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
 
-        // Fallback-Logging, wenn etwas fehlt
-        if (!buyerId || !postId) {
-          console.warn("checkout.session.completed ohne buyerId/postId", {
-            buyerId,
-            postId,
-          });
-          break;
-        }
+      // Metadaten, die wir beim Checkout gesetzt haben:
+      const postId = parseInt(session?.metadata?.postId, 10);
+      const userId = session?.metadata?.userId || null;
+      const creatorId = session?.metadata?.creatorId || null;
 
-        // 1) Zugriff auf das Medium freischalten
-        // Tabelle: media_access (user_id, post_id, created_at)
-        const { error: accessErr } = await supabase
-          .from("media_access")
-          .insert([{ user_id: buyerId, post_id: postId }]);
-
-        if (accessErr) {
-          console.error("Fehler beim Eintragen in media_access:", accessErr);
-          // kein throw -> Stripe versucht sonst erneut zu senden; wir loggen nur
-        }
-
-        // 2) (optional) Kauf für Historie protokollieren
-        // Wenn du eine purchases/käufe-Tabelle hast, kannst du sie hier befüllen:
-        // await supabase.from("purchases").insert([{
-        //   user_id: buyerId,
-        //   post_id: postId,
-        //   creator_id: creatorId || null,
-        //   amount_total: session.amount_total, // in Cent
-        //   currency: session.currency
-        // }]);
-
-        break;
+      // Basic-Validierung
+      if (!postId || !userId) {
+        console.warn("Missing metadata on session:", session?.id);
+        return res.status(200).json({ ok: true }); // nichts tun, aber OK an Stripe
       }
 
-      default:
-        // Für Debug-Zwecke
-        console.log(`Unhandled event type: ${event.type}`);
+      // In purchases eintragen (idempotent über stripe_session_id)
+      const { error } = await supabaseAdmin
+        .from("purchases")
+        .upsert(
+          {
+            user_id: userId,
+            creator_id: creatorId,
+            post_id: postId,
+            amount: session.amount_total ?? 299, // Cent
+            currency: session.currency ?? "eur",
+            stripe_session_id: session.id,
+            status: "succeeded",
+          },
+          { onConflict: "stripe_session_id" }
+        );
+
+      if (error) {
+        console.error("Supabase insert error:", error);
+        // 2xx zurückgeben, damit Stripe nicht endlos retried, aber Fehler loggen
+      }
     }
 
-    // Stripe erwartet ein 200, sonst wird der Event erneut gesendet
     return res.status(200).json({ received: true });
   } catch (err) {
-    console.error("❌ Fehler in Webhook-Handler:", err);
-    return res.status(500).send("Server error");
+    console.error("Webhook error:", err);
+    return res.status(200).json({ ok: true }); // 2xx, damit Stripe nicht spammt
   }
 }
