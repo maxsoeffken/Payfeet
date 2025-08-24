@@ -1,80 +1,97 @@
 // pages/api/stripe/webhook.js
-import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
-// --- wichtig: rohen Body erlauben, damit Stripe-Signatur geprüft werden kann
 export const config = {
   api: {
+    // WICHTIG: Roh-Body für Stripe-Signaturprüfung
     bodyParser: false,
   },
 };
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const supabaseAdmin = createClient(
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16',
+});
+
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY // nur hier (Server) benutzen
 );
 
-// Hilfsfunktion: rohen Body als Buffer lesen
-function readBuffer(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on("data", (chunk) => chunks.push(chunk));
-    req.on("end", () => resolve(Buffer.concat(chunks)));
-    req.on("error", reject);
-  });
-}
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "Method not allowed" });
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).end('Method Not Allowed');
   }
 
-  const sig = req.headers["stripe-signature"];
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  // Rohdaten holen (ohne zusätzliche Libraries)
+  const raw = Buffer.from(await req.arrayBuffer());
+  const sig = req.headers['stripe-signature'];
 
   let event;
-
   try {
-    const buf = await readBuffer(req);
-    event = stripe.webhooks.constructEvent(buf, sig, secret);
+    event = stripe.webhooks.constructEvent(
+      raw,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
   } catch (err) {
-    console.error("⚠️  Webhook signature verification failed:", err.message);
+    console.error('⚠️  Webhook signature verify failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   try {
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
+    switch (event.type) {
+      // Wenn Checkout erfolgreich war
+      case 'checkout.session.completed': {
+        const session = event.data.object;
 
-      const postId = parseInt(session?.metadata?.postId, 10);
-      const userId = session?.metadata?.userId || null;
-      const creatorId = session?.metadata?.creatorId || null;
+        // Wir erwarten, dass du diese Werte beim Erstellen der Session gesetzt hast
+        // (z.B. in /api/pay/ppv): metadata: { post_id, user_id, creator_id }
+        const { post_id, user_id, creator_id } = session.metadata || {};
 
-      if (postId && userId) {
-        const { error } = await supabaseAdmin
-          .from("purchases")
-          .upsert(
-            {
-              user_id: userId,
-              creator_id: creatorId,
-              post_id: postId,
-              amount: session.amount_total ?? 299, // in Cent
-              currency: session.currency ?? "eur",
-              stripe_session_id: session.id,
-              status: "succeeded",
-            },
-            { onConflict: "stripe_session_id" }
-          );
+        if (post_id && user_id) {
+          // Freischaltung für den Käufer speichern (idempotent)
+          await supabase
+            .from('post_unlocks')
+            .upsert(
+              {
+                user_id,
+                post_id: Number(post_id),
+                created_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id,post_id' }
+            );
 
-        if (error) console.error("Supabase insert error:", error);
+          // Optional: Verkäufe zählen (falls du eine Funktion angelegt hast)
+          // await supabase.rpc('increment_post_sales', { p_post_id: Number(post_id) }).catch(() => {});
+        }
+
+        break;
       }
+
+      // Optional: bei Rückerstattung Freischaltung entfernen
+      case 'charge.refunded': {
+        const { metadata } = event.data.object || {};
+        const { post_id, user_id } = metadata || {};
+        if (post_id && user_id) {
+          await supabase
+            .from('post_unlocks')
+            .delete()
+            .eq('user_id', user_id)
+            .eq('post_id', Number(post_id));
+        }
+        break;
+      }
+
+      default:
+        // andere Events ignorieren
+        break;
     }
 
-    // Optional: weitere Events später hier behandeln (payment_intent.* etc.)
     return res.status(200).json({ received: true });
   } catch (err) {
-    console.error("Webhook handler error:", err);
-    return res.status(500).json({ ok: false });
+    console.error('Webhook handler failed:', err);
+    return res.status(500).json({ error: 'Webhook handler failed' });
   }
 }
