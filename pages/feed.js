@@ -1,18 +1,27 @@
+// pages/feed.js
+import Layout from "../components/Layout";
+import { requireAuth } from "../lib/requireAuth";
+
 export default function Feed() {
   return (
-    <main style={wrap}>
-      <h1 style={h1}>Feed</h1>
-      <p>Hier kommt später dein Haupt-Feed rein.</p>
-      <nav style={nav}>
-        <a href="/messages">Nachrichten</a>
-        <a href="/payments">Zahlungen</a>
-        <a href="/settings">Einstellungen</a>
-        <a href="/">Start</a>
-      </nav>
-    </main>
+    <Layout>
+      <h1 className="text-2xl font-bold mb-4">Dein Feed</h1>
+      <div className="grid gap-4">
+        <article className="bg-white rounded-xl p-4 shadow">
+          <div className="font-semibold mb-2">Creator Name</div>
+          <div className="aspect-[4/3] bg-gray-100 rounded mb-2" />
+          <p className="text-sm text-gray-600">Beschreibung / Post-Text…</p>
+        </article>
+        <article className="bg-white rounded-xl p-4 shadow">
+          <div className="font-semibold mb-2">Creator Name</div>
+          <div className="aspect-[4/3] bg-gray-100 rounded mb-2" />
+          <p className="text-sm text-gray-600">Noch ein Post…</p>
+        </article>
+      </div>
+    </Layout>
   );
 }
 
-const wrap = { maxWidth: 760, margin: "40px auto", padding: 24, background: "#fff", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,.08)" };
-const h1 = { margin: 0, fontSize: 32 };
-const nav = { display: "grid", gap: 8, marginTop: 24 };
+export async function getServerSideProps(ctx) {
+  return requireAuth(ctx);
+}
