@@ -1,20 +1,40 @@
-// lib/requireAuth.js
-import { supabase } from "./supabaseClient";
+// components/RequireAuth.js
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
-export async function requireAuth(ctx) {
-  const { req, res } = ctx;
-  const { data } = await supabase.auth.getSession();
+export default function RequireAuth({ children }) {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
-  // Fallback: auf Client prüfen, wenn kein Server-Cookie gelesen werden kann
-  if (!data?.session) {
-    if (res) {
-      res.writeHead(302, { Location: "/login" });
-      res.end();
-    } else {
-      if (typeof window !== "undefined") window.location.href = "/login";
-    }
-    return { props: {} };
+  useEffect(() => {
+    // Aktuellen User laden
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      setLoading(false);
+    });
+
+    // Cleanup beim Unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  if (loading) {
+    return <p>🔄 Lade...</p>;
   }
 
-  return { props: { user: data.session.user } };
+  if (!user) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <h2>🚫 Nicht eingeloggt</h2>
+        <p>Bitte melde dich an, um fortzufahren.</p>
+        <a href="/">Zur Anmeldung</a>
+      </div>
+    );
+  }
+
+  // Falls eingeloggt → children rendern
+  return <>{children}</>;
 }
