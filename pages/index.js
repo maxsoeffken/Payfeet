@@ -1,11 +1,11 @@
 export default function Home() {
-  return null; // wird nie gerendert wegen Redirect
+  return null; // wird nie angezeigt
 }
 
 export async function getServerSideProps() {
   return {
     redirect: {
-      destination: '/feed', // immer auf /feed weiterleiten
+      destination: '/feed',
       permanent: false,
     },
   };
