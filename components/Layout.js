@@ -1,9 +1,11 @@
 // components/Layout.js
-import BottomNav from './BottomNav';
+import TopNav from "./TopNav";
+import BottomNav from "./BottomNav";
 
-export default function Layout({ children }) {
+export default function Layout({ children, title = "START" }) {
   return (
     <div className="app-shell">
+      <TopNav title={title} />
       <main className="main">{children}</main>
       <BottomNav />
     </div>
