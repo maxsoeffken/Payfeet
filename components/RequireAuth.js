@@ -1,40 +1,61 @@
 // components/RequireAuth.js
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { supabase } from '../lib/supabaseClient';
 
 export default function RequireAuth({ children }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Aktuellen User laden
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+    let mounted = true;
+
+    async function check() {
+      // Aktuelle Session holen
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      if (!session) {
+        // nicht eingeloggt -> zur Login-Seite
+        router.replace('/login');
+        return;
+      }
+
       setLoading(false);
+    }
+
+    check();
+
+    // auf Login/Logout reagieren
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.replace('/login');
+      } else {
+        setLoading(false);
+      }
     });
 
-    // Cleanup beim Unmount
     return () => {
-      subscription.unsubscribe();
+      mounted = false;
+      sub?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   if (loading) {
-    return <p>🔄 Lade...</p>;
-  }
-
-  if (!user) {
     return (
-      <div style={{ textAlign: "center", marginTop: "50px" }}>
-        <h2>🚫 Nicht eingeloggt</h2>
-        <p>Bitte melde dich an, um fortzufahren.</p>
-        <a href="/">Zur Anmeldung</a>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '60vh',
+        fontSize: 18
+      }}>
+        Lade…
       </div>
     );
   }
 
-  // Falls eingeloggt → children rendern
+  // Eingeloggt -> Inhalt zeigen
   return <>{children}</>;
 }
