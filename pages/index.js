@@ -12,4 +12,4 @@ export default function Home() {
       <p>Du wirst gleich zum Feed weitergeleitet...</p>
     </main>
   );
-}
+} 
