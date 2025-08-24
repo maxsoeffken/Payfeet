@@ -3,10 +3,12 @@ import Head from "next/head";
 export default function PaymentsPage() {
   return (
     <>
-      <Head><title>Payfeet – Zahlungen</title></Head>
-      <main style={{ padding: 24 }}>
+      <Head>
+        <title>Zahlungen – Payfeet</title>
+      </Head>
+      <main style={{maxWidth: 960, margin: "0 auto", padding: 24}}>
         <h1>Zahlungen</h1>
-        <p>Platzhalter-Seite – Build-sicher und funktioniert.</p>
+        <p>Hier verwaltest du später Abos & Auszahlungen.</p>
       </main>
     </>
   );
