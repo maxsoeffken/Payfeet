@@ -1,27 +1,40 @@
 // pages/feed.js
-import Layout from "../components/Layout";
-import { requireAuth } from "../lib/requireAuth";
+import { useState } from 'react';
+import SearchBar from '../components/SearchBar';
+// … (deine weiteren Imports wie Supabase-Client, etc.)
 
-export default function Feed() {
+export default function FeedPage() {
+  const [pickedUser, setPickedUser] = useState(null);
+
+  // TODO: wenn du möchtest: bei pickedUser z.B. Profilseite öffnen
+  // router.push(`/profile/${pickedUser.id}`) – nur falls du eine Profilseite hast
+
   return (
-    <Layout>
-      <h1 className="text-2xl font-bold mb-4">Dein Feed</h1>
-      <div className="grid gap-4">
-        <article className="bg-white rounded-xl p-4 shadow">
-          <div className="font-semibold mb-2">Creator Name</div>
-          <div className="aspect-[4/3] bg-gray-100 rounded mb-2" />
-          <p className="text-sm text-gray-600">Beschreibung / Post-Text…</p>
-        </article>
-        <article className="bg-white rounded-xl p-4 shadow">
-          <div className="font-semibold mb-2">Creator Name</div>
-          <div className="aspect-[4/3] bg-gray-100 rounded mb-2" />
-          <p className="text-sm text-gray-600">Noch ein Post…</p>
-        </article>
+    <div style={{ maxWidth: 900, margin: '40px auto', padding: '0 16px' }}>
+      {/* Top-Bar / Suche */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        marginBottom: 18
+      }}>
+        <h1 style={{ margin: 0, fontSize: 22 }}>Feed</h1>
+        <SearchBar onPickUser={(u) => setPickedUser(u)} />
       </div>
-    </Layout>
-  );
-}
 
-export async function getServerSideProps(ctx) {
-  return requireAuth(ctx);
+      {/* Optionaler Hinweis, wen du angeklickt hast */}
+      {pickedUser && (
+        <div style={{
+          marginBottom: 18, padding: '10px 12px',
+          border: '1px solid #e5e7eb', borderRadius: 10
+        }}>
+          Ausgewählt: <b>{pickedUser.name || pickedUser.id}</b>
+        </div>
+      )}
+
+      {/* …hier bleibt deine bestehende Postliste (verschwommene Bilder/PPV etc.) */}
+      {/* Beispiel: <PostList /> */}
+    </div>
+  );
 }
