@@ -1,29 +1,20 @@
-// components/RequireAuth.js
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import { supabase } from "../lib/supabaseClient";
+// lib/requireAuth.js
+import { supabase } from "./supabaseClient";
 
-export default function RequireAuth({ children }) {
-  const router = useRouter();
-  const [ready, setReady] = useState(false);
+export async function requireAuth(ctx) {
+  const { req, res } = ctx;
+  const { data } = await supabase.auth.getSession();
 
-  useEffect(() => {
-    let unsub;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data?.session) {
-        router.replace("/login");
-      } else {
-        setReady(true);
-      }
-      const auth = supabase.auth.onAuthStateChange((_e, session) => {
-        if (!session) router.replace("/login");
-      });
-      unsub = auth.data.subscription.unsubscribe;
-    })();
-    return () => unsub?.();
-  }, [router]);
+  // Fallback: auf Client prüfen, wenn kein Server-Cookie gelesen werden kann
+  if (!data?.session) {
+    if (res) {
+      res.writeHead(302, { Location: "/login" });
+      res.end();
+    } else {
+      if (typeof window !== "undefined") window.location.href = "/login";
+    }
+    return { props: {} };
+  }
 
-  if (!ready) return <div style={{ padding: 24 }}>Lade…</div>;
-  return children;
+  return { props: { user: data.session.user } };
 }
