@@ -1,0 +1,8 @@
+export default function ProfileIndex() {
+  return (
+    <div style={{ padding: "20px" }}>
+      <h1>Dein Profil</h1>
+      <p>Hier kannst du deine Informationen verwalten.</p>
+    </div>
+  );
+}
