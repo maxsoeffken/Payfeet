@@ -1,131 +1,115 @@
 // pages/index.js
-import { useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { supabase } from "../lib/supabaseClient";
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        router.replace("/dashboard");
-      }
-    };
-    checkUser();
-  }, [router]);
-
   return (
     <>
       <Head>
-        <title>Payfeet – Login oder Registrieren</title>
+        <title>Payfeet – Willkommen</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div style={styles.wrap}>
-        <div style={styles.heroTop} />
+      <main style={styles.page}>
         <div style={styles.card}>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <Image
-              src="/payfeet-logo.png"
-              width={160}
-              height={160}
-              alt="Payfeet Logo"
-              style={{ borderRadius: 24 }}
-              priority
-            />
-          </div>
+          <img
+            src="/payfeet-logo.png"
+            alt="Payfeet Logo"
+            style={styles.logo}
+            draggable={false}
+          />
 
-          <h1 style={styles.title}>Payfeet</h1>
-          <p style={styles.subtitle}>Bitte einloggen oder registrieren.</p>
+          <h1 style={styles.h1}>Payfeet</h1>
+          <p style={styles.sub}>Bitte einloggen oder registrieren.</p>
 
           <div style={styles.actions}>
-            <Link href="/login" style={{ ...styles.btn, ...styles.btnLight }}>
+            <Link href="/login" style={{ ...styles.btn, ...styles.btnGhost }}>
               Login
             </Link>
-            <Link
-              href="/register"
-              style={{ ...styles.btn, ...styles.btnPrimary }}
-            >
+            <Link href="/register" style={{ ...styles.btn, ...styles.btnPrimary }}>
               Registrieren
             </Link>
           </div>
         </div>
-        <div style={styles.heroBottom} />
-      </div>
+
+        {/* dezentter Hintergrund */}
+        <div style={styles.bg} />
+      </main>
     </>
   );
 }
 
-const lightBlue = "#6faef5";
-const primary = "#1d4ed8"; // Blau
-const text = "#0f172a";
-
 const styles = {
-  wrap: {
+  page: {
     minHeight: "100vh",
+    position: "relative",
     display: "grid",
-    gridTemplateRows: "1fr auto 1fr",
-    background: "#e8f1ff",
+    placeItems: "center",
+    background: "#74A9E7", // dein Blau – stabil, kein Bild-Stretching
+    padding: "24px",
   },
-  heroTop: {
-    background: lightBlue,
-    height: 220,
-  },
-  heroBottom: {
-    background: lightBlue,
-    height: 220,
+  bg: {
+    position: "absolute",
+    inset: 0,
+    background:
+      "radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.35), rgba(255,255,255,0))",
+    pointerEvents: "none",
   },
   card: {
-    width: "min(92%, 720px)",
-    margin: "0 auto",
-    background: "white",
-    borderRadius: 20,
-    padding: "36px 24px 28px",
+    position: "relative",
+    width: "100%",
+    maxWidth: "560px",
+    background: "rgba(255,255,255,0.96)",
+    borderRadius: "18px",
     boxShadow:
-      "0 20px 60px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.08)",
-    transform: "translateY(-80px)",
-  },
-  title: {
+      "0 10px 25px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.6)",
+    padding: "28px 24px 30px",
     textAlign: "center",
-    fontSize: 44,
+    backdropFilter: "saturate(140%) blur(4px)",
+  },
+  logo: {
+    width: 108,
+    height: 108,
+    objectFit: "cover",
+    borderRadius: 16,
+    margin: "4px auto 14px",
+    boxShadow: "0 6px 14px rgba(0,0,0,.12)",
+    background: "#74A9E7",
+  },
+  h1: {
+    fontSize: "42px",
     lineHeight: 1.1,
-    margin: "18px 0 8px",
-    color: text,
+    margin: "0 0 8px",
+    fontWeight: 800,
   },
-  subtitle: {
-    textAlign: "center",
-    margin: "0 0 24px",
-    fontSize: 18,
-    color: "#334155",
+  sub: {
+    margin: "0 0 22px",
+    color: "#3b3b3b",
+    fontSize: "18px",
   },
   actions: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: 14,
-    width: "min(520px, 92%)",
-    margin: "0 auto",
+    gap: "12px",
   },
   btn: {
     display: "inline-block",
-    textAlign: "center",
     padding: "14px 16px",
-    borderRadius: 10,
-    textDecoration: "none",
+    borderRadius: "12px",
     fontWeight: 600,
-    fontSize: 16,
+    textDecoration: "none",
+    textAlign: "center",
+    border: "1px solid transparent",
+    transition: "transform .06s ease, box-shadow .2s ease, background .2s ease",
   },
   btnPrimary: {
-    background: primary,
-    color: "white",
+    background: "#2F66F3",
+    color: "#fff",
+    boxShadow: "0 6px 16px rgba(47,102,243,.25)",
   },
-  btnLight: {
-    background: "#eef2ff",
-    color: text,
-    border: "1px solid #c7d2fe",
+  btnGhost: {
+    background: "#eef3ff",
+    color: "#1f2a44",
+    borderColor: "rgba(31,42,68,.08)",
   },
 };
