@@ -1,43 +1,78 @@
 // pages/feed.js
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import { supabase } from "../lib/supabaseClient";
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { supabase } from '../lib/supabaseClient';
+import Layout from '../components/Layout';
+import Composer from '../components/Composer';
+import PostCard from '../components/PostCard';
 
-export default function Feed() {
+export default function FeedPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/");
-        return;
-      }
-      setReady(true);
-    })();
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_ev, session) => {
-      if (!session) router.replace("/");
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      if (!data.session) router.replace('/');
+      else setReady(true);
     });
-    return () => sub.subscription.unsubscribe();
+    return () => { mounted = false; };
   }, [router]);
+
+  useEffect(() => {
+    if (!ready) return;
+
+    const load = async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id, content, created_at,
+          profiles!posts_author_id_fkey (
+            username, avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (!error) {
+        setPosts((data || []).map((p) => ({
+          id: p.id,
+          content: p.content,
+          created_at: p.created_at,
+          author_username: p.profiles?.username,
+          author_avatar: p.profiles?.avatar_url
+        })));
+      }
+    };
+
+    load();
+
+    const channel = supabase
+      .channel('posts-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, ({ new: row }) => {
+        setPosts((prev) => [{
+          id: row.id,
+          content: row.content,
+          created_at: row.created_at
+        }, ...prev]);
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [ready]);
 
   if (!ready) return null;
 
   return (
-    <div style={{ minHeight:"100vh", background:"#0b1020", color:"#eaeef6", padding:24 }}>
-      <h1 style={{ fontSize:24, fontWeight:800 }}>Dein Feed</h1>
-      <p>🎉 Eingeloggt – hier kommt dein Content.</p>
-      <button
-        onClick={async () => { await supabase.auth.signOut(); router.push("/"); }}
-        style={{
-          marginTop:14, height:42, borderRadius:10, border:"1px solid rgba(255,255,255,.14)",
-          background:"rgba(255,255,255,.04)", color:"#eaeef6", padding:"0 14px", cursor:"pointer"
-        }}
-      >
-        Abmelden
-      </button>
-    </div>
+    <Layout title="Feed – Payfeet">
+      <h2 className="pageTitle">START</h2>
+      <Composer onCreated={() => {}} />
+      <div className="feedList">
+        {posts.map((p) => <PostCard key={p.id} post={p} />)}
+        {posts.length === 0 && <div className="empty glass">Noch keine Beiträge – leg los 🎉</div>}
+      </div>
+    </Layout>
   );
 }
