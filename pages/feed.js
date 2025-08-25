@@ -12,7 +12,6 @@ export default function FeedPage() {
   const [ready, setReady] = useState(false);
   const [posts, setPosts] = useState([]);
 
-  // Guard
   useEffect(() => {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
@@ -23,18 +22,14 @@ export default function FeedPage() {
     return () => { mounted = false; };
   }, [router]);
 
-  // Daten + Realtime
   useEffect(() => {
     if (!ready) return;
-
     const load = async () => {
       const { data, error } = await supabase
         .from('posts')
         .select(`
-          id, content, image_url, created_at,
-          profiles!posts_author_id_fkey (
-            username, avatar_url
-          )
+          id, content, image_url, author_id, created_at,
+          profiles!posts_author_id_fkey ( username, avatar_url )
         `)
         .order('created_at', { ascending: false });
 
@@ -44,6 +39,7 @@ export default function FeedPage() {
           content: p.content,
           image_url: p.image_url,
           created_at: p.created_at,
+          author_id: p.author_id,
           author_username: p.profiles?.username,
           author_avatar: p.profiles?.avatar_url
         })));
@@ -59,7 +55,8 @@ export default function FeedPage() {
           id: row.id,
           content: row.content,
           image_url: row.image_url,
-          created_at: row.created_at
+          created_at: row.created_at,
+          author_id: row.author_id
         }, ...prev]);
       })
       .subscribe();
