@@ -1,0 +1,82 @@
+:root {
+  --bg: #0b1020;
+  --card: rgba(255,255,255,0.06);
+  --stroke: rgba(255,255,255,0.12);
+  --text: #e7ecf5;
+  --muted: #a6b0c2;
+  --brand: #6aa7ff;
+}
+
+* { box-sizing: border-box }
+html,body { margin:0; padding:0; background: radial-gradient(1200px 600px at 10% -10%, #19223e 0%, #0b1020 50%), var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial }
+a { color: inherit; text-decoration: none }
+
+/* ---------- AUTH PAGE ---------- */
+.authWrap { min-height: 100dvh; display:grid; place-items:center; position:relative; overflow:hidden }
+.authBG { position:absolute; inset:0; z-index:-1; opacity:.3 }
+.authBG img { width:100%; height:100%; object-fit:cover; filter: blur(4px) saturate(1.2) }
+
+.authGlass { width: min(520px, 92vw); padding: 22px; border-radius: 18px; background: rgba(12,18,36,0.7); border:1px solid var(--stroke); backdrop-filter: blur(12px); box-shadow: 0 20px 60px rgba(0,0,0,.35) }
+.brandInline { display:flex; gap:12px; align-items:center; margin-bottom:10px }
+.brandInline img { width:36px; height:36px; border-radius:8px }
+.brandInline h1 { font-size:22px; margin:0 }
+
+.tabs { display:flex; gap:8px; margin: 6px 0 12px }
+.tabs button { flex:1; padding:10px 12px; background:transparent; border:1px solid var(--stroke); color:var(--muted); border-radius:12px; cursor:pointer }
+.tabs button.active { background: linear-gradient(135deg, #7db3ff, #4f86ff); color:#071024; border-color: transparent; font-weight:700 }
+
+.notice { background: rgba(255,255,255,0.08); border: 1px solid var(--stroke); color: var(--text); padding:10px 12px; border-radius:12px; margin: 6px 0 10px }
+
+.form { display:grid; gap:10px }
+.form label { color: var(--muted); font-size: 13px }
+.form input { padding:12px; border-radius:12px; border:1px solid var(--stroke); background: transparent; color: var(--text); outline:none }
+.fine { color: var(--muted); font-size:12px; margin-top:6px }
+
+.btn { appearance:none; border:1px solid var(--stroke); padding:12px 14px; border-radius:12px; background:var(--card); color:var(--text); cursor:pointer; transition:.2s }
+.btn:hover { transform: translateY(-1px) }
+.btn.primary { border-color: transparent; background: linear-gradient(135deg, #7db3ff, #4f86ff); color:#081024; font-weight:700 }
+.btn.ghost { background: transparent }
+
+/* ---------- APP LAYOUT ---------- */
+.app { min-height: 100dvh; display:flex; flex-direction:column }
+.app__header { position: sticky; top:0; z-index:10; backdrop-filter: blur(10px); background: linear-gradient(180deg, rgba(11,16,32,0.8), rgba(11,16,32,0)); border-bottom: 1px solid var(--stroke); padding: 14px 16px; display:flex; align-items:center; justify-content:space-between }
+.brand { display:flex; gap:10px; align-items:center }
+.brand img { width:28px; height:28px; border-radius:6px }
+.brand h1 { font-size:18px; margin:0; letter-spacing:0.3px }
+.header__right { display:flex; gap:12px; align-items:center }
+.me { color: var(--muted); font-size: 12px }
+.app__main { width:100%; max-width: 900px; margin: 0 auto; padding: 20px 16px 88px }
+
+/* Cards / glass */
+.glass { background: var(--card); border:1px solid var(--stroke); border-radius:16px; box-shadow: 0 8px 30px rgba(0,0,0,.25) }
+
+/* Page */
+.pageTitle { font-size:28px; font-weight:800; letter-spacing:1px; margin: 6px 0 18px }
+
+/* Composer */
+.composer { padding: 12px; display:flex; gap:12px; flex-direction:column; margin-bottom:18px }
+.composer textarea { width:100%; background: transparent; border:1px solid var(--stroke); color: var(--text); border-radius:12px; padding:12px; outline:none; resize: vertical }
+.composer .actions { display:flex; justify-content:flex-end }
+
+/* Feed */
+.feedList { display:flex; flex-direction:column; gap:12px }
+.post { padding:14px; display:grid; grid-template-columns: 44px 1fr auto; gap:12px; align-items:flex-start }
+.post__avatar img { width:44px; height:44px; border-radius:50%; object-fit:cover; border:1px solid var(--stroke) }
+.post__meta { display:flex; gap:8px; align-items:center; color:var(--muted); font-size: 13px }
+.post__meta strong { color: var(--text); font-size: 14px }
+.post__meta .handle { color: var(--muted) }
+.post__meta .dot { opacity:.6 }
+.post__text { margin: 6px 0 0; line-height: 1.5 }
+.empty { padding: 20px; text-align:center; color: var(--muted) }
+
+/* Bottom Nav */
+.bottomnav { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); display:flex; gap:14px; background: rgba(255,255,255,0.06); border:1px solid var(--stroke); border-radius: 22px; padding: 8px 12px; backdrop-filter: blur(10px) }
+.bottomnav a { font-size: 13px; color: var(--muted); padding: 8px 12px; border-radius: 14px }
+.bottomnav a.active, .bottomnav a:hover { background: rgba(255,255,255,0.08); color: var(--text) }
+
+/* Small screens */
+@media (max-width: 480px) {
+  .pageTitle { font-size:24px }
+  .post { grid-template-columns: 36px 1fr auto }
+  .post__avatar img { width:36px; height:36px }
+}
