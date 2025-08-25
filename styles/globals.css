@@ -80,3 +80,19 @@ a { color: inherit; text-decoration: none }
   .post { grid-template-columns: 36px 1fr auto }
   .post__avatar img { width:36px; height:36px }
 }
+/* Chips / LikeButton */
+.chip { padding: 6px 10px; border-radius: 999px; border:1px solid var(--stroke); background: var(--card); color: var(--text); cursor: pointer }
+.chip--on { background: linear-gradient(135deg, #7db3ff, #4f86ff); color:#081024; border-color: transparent }
+
+/* Inputs (Profilseite) */
+.input { padding:12px; border-radius:12px; border:1px solid var(--stroke); background: transparent; color: var(--text); outline:none }
+
+/* Composer row */
+.row { display:flex; gap:12px; align-items:center }
+.spacer { flex:1 }
+
+/* Image preview / post images */
+.preview img, .post__image img { width:100%; height:auto; border-radius:12px; border:1px solid var(--stroke) }
+.post__actions { margin-top: 8px }
+
+/* Make bottom nav float (already present). Keep as is. */
