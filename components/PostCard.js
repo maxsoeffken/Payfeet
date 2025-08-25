@@ -10,13 +10,18 @@ import LikeButton from './LikeButton';
 dayjs.extend(relativeTime);
 dayjs.locale('de');
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, forceUnlocked = false }) {
   const ago = post.created_at ? dayjs(post.created_at).fromNow() : '';
   const [me, setMe] = useState(null);
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(!!forceUnlocked);
   const [buying, setBuying] = useState(false);
 
-  // Prüfe Login
+  // wenn forceUnlocked sich ändert → direkt übernehmen
+  useEffect(() => {
+    if (forceUnlocked) setUnlocked(true);
+  }, [forceUnlocked]);
+
+  // Login holen
   useEffect(() => {
     let mounted = true;
     supabase.auth.getUser().then(({ data }) => {
@@ -26,33 +31,17 @@ export default function PostCard({ post }) {
     return () => { mounted = false; };
   }, []);
 
-  // Entsperr-Logik:
-  // 1) kein Bild => immer frei
-  // 2) aktives Abo (subscriptions) => frei
-  // 3) PPV-Freischaltung (post_unlocks) => frei
+  // Entsperr-Logik nur wenn NICHT forceUnlocked
   useEffect(() => {
+    if (forceUnlocked) return;                 // Abo aktiv → keine weiteren Checks
     let abort = false;
+
     const check = async () => {
-      if (!post.image_url) { setUnlocked(true); return; }   // nur Textpost
-      if (!me) { setUnlocked(false); return; }              // nicht eingeloggt => geblurrt
+      if (!post.image_url) { setUnlocked(true); return; }   // Textpost
+      if (!me) { setUnlocked(false); return; }              // nicht eingeloggt
 
-      // 2) Abo aktiv?
-      if (post.author_id) {
-        const { data: sub, error: subErr } = await supabase
-          .from('subscriptions')
-          .select('status')
-          .eq('fan_id', me.id)
-          .eq('creator_id', post.author_id)
-          .maybeSingle();
-
-        if (!abort && sub && sub.status === 'active') {
-          setUnlocked(true);
-          return;
-        }
-      }
-
-      // 3) Einzelkauf (PPV) vorhanden?
-      const { data: unlock, error: uErr } = await supabase
+      // PPV-Kauf?
+      const { data: unlock } = await supabase
         .from('post_unlocks')
         .select('post_id')
         .eq('post_id', post.id)
@@ -63,7 +52,7 @@ export default function PostCard({ post }) {
     };
     check();
     return () => { abort = true; };
-  }, [me, post.id, post.author_id, post.image_url]);
+  }, [me, post.id, post.image_url, forceUnlocked]);
 
   const buy = async () => {
     if (!me) return alert('Bitte einloggen.');
@@ -71,11 +60,7 @@ export default function PostCard({ post }) {
     const res = await fetch('/api/pay/ppv', {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        postId: post.id,
-        userId: me.id,
-        creatorId: post.author_id || ''
-      })
+      body: JSON.stringify({ postId: post.id, userId: me.id, creatorId: post.author_id || '' })
     });
     setBuying(false);
     const j = await res.json();
@@ -102,7 +87,8 @@ export default function PostCard({ post }) {
         {post.image_url && (
           <div className={`post__image ${unlocked ? '' : 'blurred'}`}>
             <img src={post.image_url} alt="" />
-            {!unlocked && (
+            {/* Button NUR anzeigen, wenn NICHT unlocked und NICHT forceUnlocked */}
+            {!unlocked && !forceUnlocked && (
               <div className="overlay">
                 <button className="btn primary" onClick={buy} disabled={buying}>
                   {buying ? 'Weiter…' : 'Freischalten – 2,99 €'}
