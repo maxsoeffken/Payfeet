@@ -1,4 +1,5 @@
 // pages/reset.js
+'use client';
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -11,7 +12,6 @@ export default function ResetPassword() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    // Recovery-Link prüfen und Session herstellen
     const url = new URL(window.location.href);
     const code = url.searchParams.get("code");
     const type = url.searchParams.get("type");
@@ -23,7 +23,6 @@ export default function ResetPassword() {
         }
         setReady(true);
       } catch (e) {
-        console.error(e);
         setErr("Der Link ist ungültig oder abgelaufen. Fordere bitte einen neuen an.");
       }
     })();
@@ -48,48 +47,53 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="auth-wrap">
-      <div className="card">
-        <div className="logo">
+    <div className="authWrap">
+      <div className="authGlass">
+        <div className="brandInline">
           <img src="/payfeet-logo.png" alt="Payfeet" />
-          <div className="title">Passwort zurücksetzen</div>
+          <h1>Payfeet</h1>
         </div>
+        <h2 className="pageTitle">Passwort zurücksetzen</h2>
 
         {!ready ? (
           <p>Link wird geprüft …</p>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form className="form" onSubmit={handleSubmit}>
+            <label>Neues Passwort</label>
             <input
-              className="input"
               type="password"
-              placeholder="Neues Passwort (min. 6 Zeichen)"
+              placeholder="min. 6 Zeichen"
               value={pw}
               onChange={(e) => setPw(e.target.value)}
               required
               minLength={6}
             />
+            <label>Wiederholen</label>
             <input
-              className="input"
               type="password"
-              placeholder="Neues Passwort wiederholen"
+              placeholder="Passwort wiederholen"
               value={pw2}
               onChange={(e) => setPw2(e.target.value)}
               required
               minLength={6}
             />
 
-            {err && <div className="error">{err}</div>}
-            {msg && <div className="success">{msg}</div>}
+            {err && <div className="notice">{err}</div>}
+            {msg && <div className="notice">{msg}</div>}
 
-            <button className="btn" type="submit" disabled={loading}>
+            <button className="btn primary" type="submit" disabled={loading}>
               {loading ? "Speichern …" : "Passwort speichern"}
             </button>
 
-            <div className="helper">
+            <div className="fine" style={{marginTop:8}}>
               <a href="/">Zurück zum Login</a>
             </div>
           </form>
         )}
+      </div>
+
+      <div className="authBG">
+        <img src="/payfeet-bg.png" alt="" />
       </div>
     </div>
   );
