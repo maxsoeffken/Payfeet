@@ -12,6 +12,7 @@ export default function FeedPage() {
   const [ready, setReady] = useState(false);
   const [posts, setPosts] = useState([]);
 
+  // Guard
   useEffect(() => {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
@@ -22,6 +23,7 @@ export default function FeedPage() {
     return () => { mounted = false; };
   }, [router]);
 
+  // Daten + Realtime
   useEffect(() => {
     if (!ready) return;
 
@@ -37,12 +39,12 @@ export default function FeedPage() {
         .order('created_at', { ascending: false });
 
       if (!error) {
-        setPosts((data || []).map((p) => ({
+        setPosts((data||[]).map(p => ({
           id: p.id,
           content: p.content,
           created_at: p.created_at,
           author_username: p.profiles?.username,
-          author_avatar: p.profiles?.avatar_url
+          author_avatar: p.profiles?.avatar_url,
         })));
       }
     };
@@ -51,11 +53,9 @@ export default function FeedPage() {
 
     const channel = supabase
       .channel('posts-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, ({ new: row }) => {
-        setPosts((prev) => [{
-          id: row.id,
-          content: row.content,
-          created_at: row.created_at
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'posts' }, ({ new: row }) => {
+        setPosts(prev => [{
+          id: row.id, content: row.content, created_at: row.created_at
         }, ...prev]);
       })
       .subscribe();
@@ -70,8 +70,8 @@ export default function FeedPage() {
       <h2 className="pageTitle">START</h2>
       <Composer onCreated={() => {}} />
       <div className="feedList">
-        {posts.map((p) => <PostCard key={p.id} post={p} />)}
-        {posts.length === 0 && <div className="empty glass">Noch keine Beiträge – leg los 🎉</div>}
+        {posts.map(p => <PostCard key={p.id} post={p} />)}
+        {posts.length===0 && <div className="empty glass">Noch keine Beiträge – leg los 🎉</div>}
       </div>
     </Layout>
   );
