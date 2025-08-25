@@ -105,19 +105,19 @@ export default function CreatorPage() {
 
           <div className="feedList" style={{marginTop:12}}>
             {posts.map(p => (
-              <PostCard key={p.id} post={{
-                id: p.id,
-                content: p.content,
-                image_url: p.image_url,
-                created_at: p.created_at,
-                author_id: p.author_id,
-                author_username: creator.username,
-                author_avatar: creator.avatar_url,
-                // Hinweis: PostCard prüft Freischaltung (PPV) – für ABO interpretieren wir „freigeschaltet“
-                // via CSS/Overlay lassen wir PostCard so wie ist; Abo-Active -> treat as unlocked:
-                // Trick: Wenn Abo aktiv, geben wir image_url nur weiter und PostCard prüft post_unlocks.
-                // Optional: könnte man PostCard erweitern und bei Abo active automatisch unlocked setzen.
-              }} />
+              <PostCard
+                key={p.id}
+                forceUnlocked={subActive}          // <<<<< HIER
+                post={{
+                  id: p.id,
+                  content: p.content,
+                  image_url: p.image_url,
+                  created_at: p.created_at,
+                  author_id: p.author_id,
+                  author_username: creator.username,
+                  author_avatar: creator.avatar_url
+                }}
+              />
             ))}
             {posts.length===0 && <div className="glass" style={{padding:16}}>Noch keine Beiträge.</div>}
           </div>
