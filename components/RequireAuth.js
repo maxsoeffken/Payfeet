@@ -1,34 +1,56 @@
-// /components/RequireAuth.js
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { useRouter } from 'next/router';
+// components/RequireAuth.js
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "../lib/supabaseClient"; // <<< WICHTIG: richtiger Pfad
 
 export default function RequireAuth({ children }) {
   const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'authed' | 'nope'>('loading');
+  const [checking, setChecking] = useState(true);
+  const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!mounted) return;
-      setStatus(data.session ? 'authed' : 'nope');
-    })();
+    let unsub = () => {};
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setStatus(session ? 'authed' : 'nope');
-    });
+    async function init() {
+      // 1) aktuelle Session lesen
+      const { data: sessionData } = await supabase.auth.getSession();
+      const hasSession = !!sessionData?.session;
+      setAuthed(hasSession);
+      setChecking(false);
 
-    return () => {
-      mounted = false;
-      sub?.subscription?.unsubscribe();
-    };
-  }, []);
+      // 2) auf Änderungen der Session reagieren (Login/Logout)
+      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+        const ok = !!session;
+        setAuthed(ok);
+        if (!ok) {
+          // rauswerfen, wenn ausgeloggt
+          router.replace("/login");
+        }
+      });
+      unsub = () => sub?.subscription?.unsubscribe?.();
+      
+      // 3) wenn keine Session -> auf /login
+      if (!hasSession) {
+        router.replace("/login");
+      }
+    }
 
-  if (status === 'loading') return <div style={{ padding: 24 }}>Lade…</div>;
-  if (status === 'nope') {
-    if (typeof window !== 'undefined') router.replace('/login');
+    init();
+    return () => unsub();
+  }, [router]);
+
+  if (checking) {
+    return (
+      <div style={{display:"grid",placeItems:"center",minHeight:"50vh",fontSize:16,opacity:.7}}>
+        Prüfe Anmeldung …
+      </div>
+    );
+  }
+
+  if (!authed) {
+    // während Redirect zu /login
     return null;
   }
+
   return <>{children}</>;
 }
