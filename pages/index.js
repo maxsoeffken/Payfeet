@@ -8,11 +8,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || '';
 
 export default function AuthPage() {
   const router = useRouter();
-  const [tab, setTab] = useState('login'); // 'login' | 'register' | 'reset'
+  const [tab, setTab] = useState('login'); // login | register | reset
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
 
-  // Wenn eingeloggt -> direkt in den Feed
+  // Wenn eingeloggt -> direkt Feed
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace('/feed');
@@ -21,8 +21,7 @@ export default function AuthPage() {
 
   const onLogin = async (e) => {
     e.preventDefault();
-    setMsg('');
-    setBusy(true);
+    setMsg(''); setBusy(true);
     const email = e.target.email.value.trim();
     const password = e.target.password.value;
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -33,35 +32,30 @@ export default function AuthPage() {
 
   const onRegister = async (e) => {
     e.preventDefault();
-    setMsg('');
-    setBusy(true);
+    setMsg(''); setBusy(true);
     const email = e.target.email.value.trim();
     const password = e.target.password.value;
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: `${SITE_URL}/feed` // nach Mailbestätigung
-      }
+      options: { emailRedirectTo: `${SITE_URL}/feed` }
     });
     setBusy(false);
     if (error) return setMsg(error.message);
-    setMsg('📩 Bestätigungs-E-Mail wurde gesendet. Bitte Postfach prüfen.');
+    setMsg('📩 Bestätigungs-Mail gesendet. Bitte Postfach prüfen.');
     setTab('login');
   };
 
   const onReset = async (e) => {
     e.preventDefault();
-    setMsg('');
-    setBusy(true);
+    setMsg(''); setBusy(true);
     const email = e.target.email.value.trim();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${SITE_URL}/feed`
+      redirectTo: `${SITE_URL}/reset`
     });
     setBusy(false);
     if (error) return setMsg(error.message);
-    setMsg('📩 Passwort-Reset E-Mail wurde gesendet.');
+    setMsg('📩 Passwort-Reset Mail gesendet.');
     setTab('login');
   };
 
@@ -74,61 +68,44 @@ export default function AuthPage() {
         </div>
 
         <div className="tabs">
-          <button
-            className={tab === 'login' ? 'active' : ''}
-            onClick={() => setTab('login')}
-          >Login</button>
-          <button
-            className={tab === 'register' ? 'active' : ''}
-            onClick={() => setTab('register')}
-          >Registrieren</button>
-          <button
-            className={tab === 'reset' ? 'active' : ''}
-            onClick={() => setTab('reset')}
-          >Passwort vergessen</button>
+          <button className={tab==='login'?'active':''} onClick={()=>setTab('login')}>Login</button>
+          <button className={tab==='register'?'active':''} onClick={()=>setTab('register')}>Registrieren</button>
+          <button className={tab==='reset'?'active':''} onClick={()=>setTab('reset')}>Passwort vergessen</button>
         </div>
 
         {msg && <div className="notice">{msg}</div>}
 
-        {tab === 'login' && (
+        {tab==='login' && (
           <form className="form" onSubmit={onLogin}>
             <label>E-Mail</label>
             <input name="email" type="email" placeholder="you@mail.com" required />
             <label>Passwort</label>
             <input name="password" type="password" placeholder="••••••••" required />
-            <button className="btn primary" disabled={busy}>
-              {busy ? 'Einloggen…' : 'Einloggen'}
-            </button>
+            <button className="btn primary" disabled={busy}>{busy?'Einloggen…':'Einloggen'}</button>
           </form>
         )}
 
-        {tab === 'register' && (
+        {tab==='register' && (
           <form className="form" onSubmit={onRegister}>
             <label>E-Mail</label>
             <input name="email" type="email" placeholder="you@mail.com" required />
             <label>Passwort</label>
             <input name="password" type="password" placeholder="Min. 6 Zeichen" required />
-            <button className="btn primary" disabled={busy}>
-              {busy ? 'Registrieren…' : 'Registrieren'}
-            </button>
-            <p className="fine">
-              Mit der Registrierung stimmst du unseren Nutzungsbedingungen zu.
-            </p>
+            <button className="btn primary" disabled={busy}>{busy?'Registrieren…':'Registrieren'}</button>
+            <p className="fine">Mit der Registrierung stimmst du unseren Bedingungen zu.</p>
           </form>
         )}
 
-        {tab === 'reset' && (
+        {tab==='reset' && (
           <form className="form" onSubmit={onReset}>
             <label>E-Mail</label>
             <input name="email" type="email" placeholder="you@mail.com" required />
-            <button className="btn primary" disabled={busy}>
-              {busy ? 'Senden…' : 'Reset-Link senden'}
-            </button>
+            <button className="btn primary" disabled={busy}>{busy?'Senden…':'Reset-Link senden'}</button>
           </form>
         )}
       </div>
 
-      {/* Hintergrund */}
+      {/* Hintergrundbild */}
       <div className="authBG">
         <img src="/payfeet-bg.png" alt="" />
       </div>
