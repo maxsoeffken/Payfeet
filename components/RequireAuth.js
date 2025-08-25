@@ -1,57 +1,35 @@
-// components/RequireAuth.js
+// /components/RequireAuth.js
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { supabase } from '../lib/supabaseClient'; // <- WICHTIG: richtiger Pfad
+import { supabase } from '../lib/supabaseClient';
 
 export default function RequireAuth({ children }) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [session, setSession] = useState(null);
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
-    const checkSession = async () => {
+    const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!isMounted) return;
-
-      setSession(session);
+      if (!mounted) return;
+      if (!session) router.replace('/login');
       setChecking(false);
-
-      if (!session) {
-        // nicht eingeloggt -> zur Login-Seite
-        router.replace('/login');
-      }
     };
 
-    checkSession();
+    check();
 
-    // Session-Listener (Login/Logout)
-    const { data: authListener } = supabase.auth.onAuthStateChange((_evt, session) => {
-      setSession(session);
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) router.replace('/login');
     });
 
     return () => {
-      isMounted = false;
-      authListener?.subscription?.unsubscribe?.();
+      mounted = false;
+      sub?.subscription?.unsubscribe?.();
     };
   }, [router]);
 
-  if (checking) {
-    return (
-      <div style={{ padding: 24, fontSize: 16, opacity: 0.7 }}>
-        Prüfe Anmeldung …
-      </div>
-    );
-  }
-
-  if (!session) {
-    // Während Redirect nichts rendern
-    return null;
-  }
-
+  if (checking) return null;
   return <>{children}</>;
 }
