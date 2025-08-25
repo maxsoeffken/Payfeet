@@ -1,46 +1,43 @@
 // components/Shell.js
-import Image from "next/image";
-import Link from "next/link";
+import BottomNav from "./BottomNav";
 
-const styles = {
-  page: { minHeight: "100vh", background: "#eef5ff", display: "flex", flexDirection: "column" },
-  hero: { background: "#74a8e8", height: 120, width: "100%" },
-  wrap: { marginTop: -40, display: "flex", justifyContent: "center", padding: "0 16px 40px" },
-  card: { width: "100%", maxWidth: 1040, background: "#fff", borderRadius: 16, boxShadow: "0 10px 25px rgba(0,0,0,0.12)", padding: 20 },
-  header: { display: "flex", alignItems: "center", gap: 12, padding: "6px 6px 12px 6px" },
-  title: { margin: 0, fontSize: 22, fontWeight: 800 },
-  tabs: { display: "flex", gap: 8, borderBottom: "1px solid #e6eaf2", padding: "0 6px" },
-  tab: (active) => ({
-    padding: "10px 12px",
-    borderRadius: 10,
-    textDecoration: "none",
-    color: active ? "#0f172a" : "#334155",
-    fontWeight: active ? 800 : 600,
-    background: active ? "#eef3ff" : "transparent",
-  }),
-  body: { padding: 8 },
-};
-
-export default function Shell({ active = "dashboard", children }) {
+export default function Shell({ children, active = "home", title = "START" }) {
   return (
-    <div style={styles.page}>
-      <div style={styles.hero} />
-      <div style={styles.wrap}>
-        <div style={styles.card}>
-          <header style={styles.header}>
-            <Image src="/payfeet-logo.png" alt="Payfeet" width={40} height={40} style={{ borderRadius: 8 }} />
-            <h1 style={styles.title}>Payfeet</h1>
-          </header>
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(1200px 600px at 20% -10%, #1f2a69 0%, transparent 60%), radial-gradient(900px 500px at 110% -20%, #0ea5e9 0%, transparent 55%), #0b1533",
+      }}
+    >
+      <style jsx global>{`
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background: #0b1533;}
+        :root { --card-bg: #ffffff; --text-strong: #0f172a; --text: #111827; --text-muted: #6b7280; }
+        h1 { color: #f8fafc; font-weight: 800; letter-spacing: .5px; }
+      `}</style>
 
-          <nav style={styles.tabs}>
-            <Link href="/dashboard" style={styles.tab(active === "dashboard")}>Übersicht</Link>
-            <Link href="/feed"      style={styles.tab(active === "feed")}>Feed</Link>
-            <Link href="/messages"  style={styles.tab(active === "messages")}>Nachrichten</Link>
-            <Link href="/payments"  style={styles.tab(active === "payments")}>Zahlungen</Link>
-            <Link href="/settings"  style={styles.tab(active === "settings")}>Einstellungen</Link>
-          </nav>
+      <header style={{ padding: "28px 16px 8px" }}>
+        <h1 style={{ fontSize: 34, margin: 0, textTransform: "uppercase" }}>{title}</h1>
+      </header>
 
-          <main style={styles.body}>{children}</main>
+      <main style={{ padding: "12px 16px 110px", maxWidth: 720, margin: "0 auto" }}>{children}</main>
+
+      <div
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          padding: "10px 14px 14px",
+          backdropFilter: "saturate(180%) blur(12px)",
+          WebkitBackdropFilter: "saturate(180%) blur(12px)",
+          background: "rgba(255,255,255,.65)",
+          borderTop: "1px solid rgba(255,255,255,.6)",
+        }}
+      >
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <BottomNav active={active} />
         </div>
       </div>
     </div>
