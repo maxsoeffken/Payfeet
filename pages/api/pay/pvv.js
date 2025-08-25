@@ -1,7 +1,14 @@
 // pages/api/pay/ppv.js
 import Stripe from "stripe";
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
+
+// Service-Role NUR serverseitig!
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -15,12 +22,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "postId und userId sind erforderlich" });
     }
 
-    // Preis 2,99 € in Cent
-    const amount = 299;
+    // Preis & Sichtbarkeit sicher aus der DB lesen
+    const { data: post, error } = await supabaseAdmin
+      .from('posts')
+      .select('price_cents, visibility')
+      .eq('id', postId)
+      .maybeSingle();
 
-    const origin =
-      req.headers.origin ||
-      `https://${req.headers.host || "payfeet.vercel.app"}`;
+    if (error || !post) return res.status(404).json({ error: "Post nicht gefunden" });
+    if (post.visibility !== 'ppv') return res.status(400).json({ error: "Post ist kein PPV" });
+
+    const amount = post.price_cents && post.price_cents >= 100 ? post.price_cents : 299; // Fallback 2,99 €
+
+    const origin = req.headers.origin || `https://${req.headers.host || "payfeet.vercel.app"}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
