@@ -11,7 +11,7 @@ export default function ResetPassword() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    // Prüfe Recovery-Code aus URL und stelle Session her
+    // Recovery-Link prüfen und Session herstellen
     const url = new URL(window.location.href);
     const code = url.searchParams.get("code");
     const type = url.searchParams.get("type");
@@ -33,14 +33,8 @@ export default function ResetPassword() {
     e.preventDefault();
     setErr(""); setMsg("");
 
-    if (pw.length < 6) {
-      setErr("Passwort muss mindestens 6 Zeichen haben.");
-      return;
-    }
-    if (pw !== pw2) {
-      setErr("Passwörter stimmen nicht überein.");
-      return;
-    }
+    if (pw.length < 6) return setErr("Passwort muss mindestens 6 Zeichen haben.");
+    if (pw !== pw2)   return setErr("Passwörter stimmen nicht überein.");
 
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password: pw });
