@@ -1,9 +1,8 @@
 // /components/RequireAuth.js
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { supabase } from '../lib/supabaseClient'; // <- WICHTIG: richtiger Pfad
+import { supabase } from '../lib/supabaseClient';  // <-- KORREKTER PFAD
 
 export default function RequireAuth({ children }) {
   const router = useRouter();
@@ -14,32 +13,19 @@ export default function RequireAuth({ children }) {
 
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-
-      if (!session) {
-        router.replace('/login');
+      if (!session && mounted) {
+        router.push('/login');
       } else {
         setChecking(false);
       }
     };
 
     check();
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) router.replace('/login');
-    });
-
     return () => {
       mounted = false;
-      sub?.subscription?.unsubscribe?.();
     };
   }, [router]);
 
-  if (checking) {
-    return (
-      <div style={{ padding: 24 }}>Lade…</div>
-    );
-  }
-
-  return <>{children}</>;
+  if (checking) return <p>Wird geprüft...</p>;
+  return children;
 }
