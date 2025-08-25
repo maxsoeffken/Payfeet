@@ -3,12 +3,12 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/de';
+import LikeButton from './LikeButton';
 dayjs.extend(relativeTime);
 dayjs.locale('de');
 
 export default function PostCard({ post }) {
   const ago = post.created_at ? dayjs(post.created_at).fromNow() : '';
-
   return (
     <article className="post glass">
       <div className="post__avatar">
@@ -21,9 +21,16 @@ export default function PostCard({ post }) {
           <span className="dot">·</span>
           <time>{ago}</time>
         </header>
-        <p className="post__text">{post.content}</p>
+        {post.content && <p className="post__text">{post.content}</p>}
+        {post.image_url && (
+          <div className="post__image">
+            <img src={post.image_url} alt="" />
+          </div>
+        )}
+        <div className="post__actions">
+          <LikeButton postId={post.id} />
+        </div>
       </div>
-      <div className="post__menu">⋯</div>
     </article>
   );
 }
