@@ -1,11 +1,12 @@
 // components/PostCard.js
 'use client';
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/de';
-import LikeButton from './LikeButton';
-import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import LikeButton from './LikeButton';
+
 dayjs.extend(relativeTime);
 dayjs.locale('de');
 
@@ -15,29 +16,54 @@ export default function PostCard({ post }) {
   const [unlocked, setUnlocked] = useState(false);
   const [buying, setBuying] = useState(false);
 
+  // Prüfe Login
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data }) => {
       if (!mounted) return;
-      setMe(user ?? null);
-
-      if (user && post.image_url) {
-        // prüfen, ob freigeschaltet
-        const { data } = await supabase
-          .from('post_unlocks')
-          .select('post_id')
-          .eq('post_id', post.id)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        setUnlocked(!!data);
-      } else {
-        // Textposts sind immer sichtbar
-        setUnlocked(true);
-      }
-    })();
+      setMe(data?.user ?? null);
+    });
     return () => { mounted = false; };
-  }, [post.id, post.image_url]);
+  }, []);
+
+  // Entsperr-Logik:
+  // 1) kein Bild => immer frei
+  // 2) aktives Abo (subscriptions) => frei
+  // 3) PPV-Freischaltung (post_unlocks) => frei
+  useEffect(() => {
+    let abort = false;
+    const check = async () => {
+      if (!post.image_url) { setUnlocked(true); return; }   // nur Textpost
+      if (!me) { setUnlocked(false); return; }              // nicht eingeloggt => geblurrt
+
+      // 2) Abo aktiv?
+      if (post.author_id) {
+        const { data: sub, error: subErr } = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('fan_id', me.id)
+          .eq('creator_id', post.author_id)
+          .maybeSingle();
+
+        if (!abort && sub && sub.status === 'active') {
+          setUnlocked(true);
+          return;
+        }
+      }
+
+      // 3) Einzelkauf (PPV) vorhanden?
+      const { data: unlock, error: uErr } = await supabase
+        .from('post_unlocks')
+        .select('post_id')
+        .eq('post_id', post.id)
+        .eq('user_id', me.id)
+        .maybeSingle();
+
+      if (!abort) setUnlocked(!!unlock);
+    };
+    check();
+    return () => { abort = true; };
+  }, [me, post.id, post.author_id, post.image_url]);
 
   const buy = async () => {
     if (!me) return alert('Bitte einloggen.');
@@ -45,7 +71,11 @@ export default function PostCard({ post }) {
     const res = await fetch('/api/pay/ppv', {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ postId: post.id, userId: me.id, creatorId: post.author_id || '' })
+      body: JSON.stringify({
+        postId: post.id,
+        userId: me.id,
+        creatorId: post.author_id || ''
+      })
     });
     setBuying(false);
     const j = await res.json();
