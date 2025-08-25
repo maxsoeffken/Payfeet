@@ -1,5 +1,6 @@
 // components/Layout.js
 'use client';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
@@ -17,6 +18,8 @@ export default function Layout({ title = 'Payfeet', children }) {
     router.replace('/');
   };
 
+  const active = (path) => (router.pathname === path ? 'active' : '');
+
   return (
     <div className="app">
       <header className="app__header">
@@ -33,11 +36,10 @@ export default function Layout({ title = 'Payfeet', children }) {
       <main className="app__main">{children}</main>
 
       <nav className="bottomnav">
-        <a className="active">Home</a>
-        <a>Benachr.</a>
-        <a>Neu</a>
-        <a>Nachr.</a>
-        <a>Profil</a>
+        <Link className={active('/feed')} href="/feed">Home</Link>
+        <Link className={active('/upload')} href="/upload">Upload</Link>
+        <Link className={active('/messages')} href="/messages">Nachr.</Link>
+        <Link className={active('/profile')} href="/profile">Profil</Link>
       </nav>
     </div>
   );
