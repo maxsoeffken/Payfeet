@@ -31,7 +31,7 @@ export default function FeedPage() {
       const { data, error } = await supabase
         .from('posts')
         .select(`
-          id, content, created_at,
+          id, content, image_url, created_at,
           profiles!posts_author_id_fkey (
             username, avatar_url
           )
@@ -42,9 +42,10 @@ export default function FeedPage() {
         setPosts((data||[]).map(p => ({
           id: p.id,
           content: p.content,
+          image_url: p.image_url,
           created_at: p.created_at,
           author_username: p.profiles?.username,
-          author_avatar: p.profiles?.avatar_url,
+          author_avatar: p.profiles?.avatar_url
         })));
       }
     };
@@ -55,7 +56,10 @@ export default function FeedPage() {
       .channel('posts-feed')
       .on('postgres_changes', { event:'INSERT', schema:'public', table:'posts' }, ({ new: row }) => {
         setPosts(prev => [{
-          id: row.id, content: row.content, created_at: row.created_at
+          id: row.id,
+          content: row.content,
+          image_url: row.image_url,
+          created_at: row.created_at
         }, ...prev]);
       })
       .subscribe();
