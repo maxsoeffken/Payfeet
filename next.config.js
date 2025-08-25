@@ -1,15 +1,3 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/feed', // Root -> /feed
-        permanent: false,
-      },
-    ];
-  },
-};
-
+const nextConfig = { reactStrictMode: true };
 module.exports = nextConfig;
